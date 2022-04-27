@@ -36,19 +36,30 @@ def start(update: Update, context: CallbackContext) -> int:
 
 
 def my_announsements(update: Update, context: CallbackContext):
-    pass
+    update.message.reply_text(
+        'Тут будут объявления, опубликованный вами'
+    )
 
 
 def search(update: Update, context: CallbackContext):
-    pass
+    update.message.reply_text(
+        'Напишите ваш запрос'
+    )
+    user = update.message.from_user
+    logger.info("search request %s: %s", user.first_name, update.message.text)
+    return SEARCH
 
 
 def help_message(update: Update, context: CallbackContext):
-    pass
+    update.message.reply_text(
+        'Если у вас возникли проблемы, позвоните по номеру 8(987)8311056, мы все уладим'
+    )
 
 
 def favourites(update: Update, context: CallbackContext):
-    pass
+    update.message.reply_text(
+        'тут будут отображаться понравившиеся вам объявления'
+    )
 
 
 def main() -> None:
@@ -60,7 +71,7 @@ def main() -> None:
             ACTION: [
                 MessageHandler(Filters.regex('^Мои объявления$'), my_announsements),
                 MessageHandler(Filters.regex('^Новое объявление$'), create_new_ad),
-                MessageHandler(Filters.regex('^Поиск$'), search),
+                MessageHandler(Filters.regex ('^Поиск$'), search),
                 MessageHandler(Filters.regex('^Помощь$'), help_message),
                 MessageHandler(Filters.regex('^Избранное$'), favourites)],
 
