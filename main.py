@@ -1,4 +1,3 @@
-
 import logging
 
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
@@ -40,10 +39,6 @@ def my_announsements(update: Update, context: CallbackContext):
     pass
 
 
-def new_announsements(update: Update, context: CallbackContext):
-     main_adding()
-
-
 def search(update: Update, context: CallbackContext):
     pass
 
@@ -64,15 +59,26 @@ def main() -> None:
         states={
             ACTION: [
                 MessageHandler(Filters.regex('^Мои объявления$'), my_announsements),
-                MessageHandler(Filters.regex('^Новое объявление$'), new_announsements),
+                MessageHandler(Filters.regex('^Новое объявление$'), create_new_ad),
                 MessageHandler(Filters.regex('^Поиск$'), search),
                 MessageHandler(Filters.regex('^Помощь$'), help_message),
-                MessageHandler(Filters.regex('^Избранное$'), favourites)]
+                MessageHandler(Filters.regex('^Избранное$'), favourites)],
+
+            SELECT_CATEGORY: [MessageHandler(Filters.regex('^(Категория1|Категория2|Категория3)$'), select_category)],
+            SELECT_PHOTO: [MessageHandler(Filters.photo, select_photo), CommandHandler('skip', skip_photo)],
+            TITLE: [
+                MessageHandler(Filters.text, add_description),
+                CommandHandler('skip', skip_description),
+            ],
+            FULL_DESCRIPTION: [MessageHandler(Filters.text & ~Filters.command, addition)]
+
         },
         fallbacks=[CommandHandler('cancel', cancel)],
     )
 
     dispatcher.add_handler(conv_handler)
+    dispatcher.add_handler(new_ad_handler)
+
     updater.start_polling()
     updater.idle()
 

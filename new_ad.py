@@ -15,13 +15,10 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-
-CATEGORY, PHOTO, NAME, DESCRIPTION, SEARCHRESULT = range(5)
-
-users = {}
+SELECT_CATEGORY, SELECT_PHOTO, TITLE, FULL_DESCRIPTION = range(10, 14)
 
 
-def start(update: Update, context: CallbackContext) -> int:
+def create_new_ad(update: Update, context: CallbackContext) -> int:
     reply_keyboard = [['Категория1', 'Категория2', 'Категория3']]
 
     update.message.reply_text(
@@ -31,10 +28,10 @@ def start(update: Update, context: CallbackContext) -> int:
         ),
     )
 
-    return CATEGORY
+    return SELECT_CATEGORY
 
 
-def category(update: Update, context: CallbackContext) -> int:
+def select_category(update: Update, context: CallbackContext) -> int:
     user = update.message.from_user
 
     logger.info("category %s: %s", user.first_name, update.message.text)
@@ -43,10 +40,10 @@ def category(update: Update, context: CallbackContext) -> int:
         reply_markup=ReplyKeyboardRemove(),
     )
 
-    return PHOTO
+    return SELECT_PHOTO
 
 
-def photo(update: Update, context: CallbackContext) -> int:
+def select_photo(update: Update, context: CallbackContext) -> int:
     user = update.message.from_user
     photo_file = update.message.photo[-1].get_file()
     photo_file.download('user_photo.jpg')
@@ -55,7 +52,7 @@ def photo(update: Update, context: CallbackContext) -> int:
         'Пришлите описание вашего товара'
     )
 
-    return NAME
+    return TITLE
 
 
 def skip_photo(update: Update, context: CallbackContext) -> int:
@@ -65,10 +62,10 @@ def skip_photo(update: Update, context: CallbackContext) -> int:
         'Продолжим, добавьте описание вашего товара'
     )
 
-    return NAME
+    return TITLE
 
 
-def description(update: Update, context: CallbackContext) -> int:
+def add_description(update: Update, context: CallbackContext) -> int:
     user = update.message.from_user
     logger.info(
         "Description of %s: %f / %f", user.first_name)
@@ -76,7 +73,7 @@ def description(update: Update, context: CallbackContext) -> int:
         'Продолжим, по желанию напишите дополнение'
     )
 
-    return DESCRIPTION
+    return FULL_DESCRIPTION
 
 
 def skip_description(update: Update, context: CallbackContext) -> int:
@@ -86,7 +83,7 @@ def skip_description(update: Update, context: CallbackContext) -> int:
         'Продолжим, по желанию напишите дополнение'
     )
 
-    return NAME
+    return TITLE
 
 
 def addition(update: Update, context: CallbackContext) -> int:
@@ -107,27 +104,16 @@ def cancel(update: Update, context: CallbackContext) -> int:
     return ConversationHandler.END
 
 
-def main_adding() -> None:
-    updater = Updater("5194363749:AAH7UrS88vUQa2BgaAWCp-GMmn1m6wNB1s0")
-    dispatcher = updater.dispatcher
-    conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', start)],
-        states={
-            CATEGORY: [MessageHandler(Filters.regex('^(Категория1|Категория2|Категория3)$'), category)],
-            PHOTO: [MessageHandler(Filters.photo, photo), CommandHandler('skip', skip_photo)],
-            NAME: [
-                MessageHandler(Filters.text, description),
-                CommandHandler('skip', skip_description),
-            ],
-            DESCRIPTION: [MessageHandler(Filters.text & ~Filters.command, addition)],
-        },
-        fallbacks=[CommandHandler('cancel', cancel)],
-    )
-
-    dispatcher.add_handler(conv_handler)
-    updater.start_polling()
-    updater.idle()
-
-
-if __name__ == '__main__':
-    main_adding()
+new_ad_handler = ConversationHandler(
+    entry_points=[MessageHandler(Filters.regex('^Новое объявление$'), create_new_ad)],
+    states={
+        SELECT_CATEGORY: [MessageHandler(Filters.regex('^(Категория1|Категория2|Категория3)$'), select_category)],
+        SELECT_PHOTO: [MessageHandler(Filters.photo, select_photo), CommandHandler('skip', skip_photo)],
+        TITLE: [
+            MessageHandler(Filters.text, add_description),
+            CommandHandler('skip', skip_description),
+        ],
+        FULL_DESCRIPTION: [MessageHandler(Filters.text & ~Filters.command, addition)],
+    },
+    fallbacks=[CommandHandler('cancel', cancel)],
+)
