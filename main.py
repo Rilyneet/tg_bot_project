@@ -20,8 +20,6 @@ logger = logging.getLogger(__name__)
 
 ACTION, NEW_ANNOUNCEMENT, SEARCH, HELP, FAVORITES = range(5)
 
-users = {}
-
 
 def start(update: Update, context: CallbackContext) -> int:
     reply_keyboard = [['Мои объявления', 'Новое объявление', 'Поиск'], ['Помощь', 'Избранное']]
@@ -71,7 +69,7 @@ def main() -> None:
             ACTION: [
                 MessageHandler(Filters.regex('^Мои объявления$'), my_announsements),
                 MessageHandler(Filters.regex('^Новое объявление$'), create_new_ad),
-                MessageHandler(Filters.regex ('^Поиск$'), search),
+                MessageHandler(Filters.regex('^Поиск$'), search),
                 MessageHandler(Filters.regex('^Помощь$'), help_message),
                 MessageHandler(Filters.regex('^Избранное$'), favourites)],
 
@@ -86,6 +84,13 @@ def main() -> None:
         },
         fallbacks=[CommandHandler('cancel', cancel)],
     )
+    # user = User()
+    # user.name = "Пользователь 1"
+    # user.about = "биография пользователя 1"
+    # user.email = "email@email.ru"
+    # db_sess = database.create_session()
+    # db_sess.add(user)
+    # db_sess.commit()
 
     dispatcher.add_handler(conv_handler)
     dispatcher.add_handler(new_ad_handler)
@@ -96,3 +101,4 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+    print(user_information)

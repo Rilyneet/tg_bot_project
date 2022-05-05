@@ -10,12 +10,14 @@ from telegram.ext import (
     CallbackContext,
 )
 
+
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
 )
 
 logger = logging.getLogger(__name__)
 SELECT_CATEGORY, SELECT_PHOTO, TITLE, FULL_DESCRIPTION = range(10, 14)
+user_information = {}
 
 
 def create_new_ad(update: Update, context: CallbackContext) -> int:
@@ -27,18 +29,23 @@ def create_new_ad(update: Update, context: CallbackContext) -> int:
             reply_keyboard, one_time_keyboard=True, input_field_placeholder='Выбор категории'
         ),
     )
+    if update.message.from_user.id not in user_information:
+        user_information[update.message.from_user.id] = {}
+    user_information[update.message.from_user.id]['category'] = update.message.text
 
     return SELECT_CATEGORY
 
 
 def select_category(update: Update, context: CallbackContext) -> int:
     user = update.message.from_user
-
     logger.info("category %s: %s", user.first_name, update.message.text)
     update.message.reply_text(
         'Пришлите изображение вашего товара',
         reply_markup=ReplyKeyboardRemove(),
     )
+    if update.message.from_user.id not in user_information:
+        user_information[update.message.from_user.id] = {}
+    user_information[update.message.from_user.id]['photo'] = update.message.text
 
     return SELECT_PHOTO
 
@@ -51,6 +58,9 @@ def select_photo(update: Update, context: CallbackContext) -> int:
     update.message.reply_text(
         'Пришлите описание вашего товара'
     )
+    if update.message.from_user.id not in user_information:
+        user_information[update.message.from_user.id] = {}
+    user_information[update.message.from_user.id]['description'] = update.message.text
 
     return TITLE
 
@@ -61,6 +71,9 @@ def skip_photo(update: Update, context: CallbackContext) -> int:
     update.message.reply_text(
         'Продолжим, добавьте описание вашего товара'
     )
+    if update.message.from_user.id not in user_information:
+        user_information[update.message.from_user.id] = {}
+    user_information[update.message.from_user.id]['description'] = update.message.text
 
     return TITLE
 
@@ -72,6 +85,9 @@ def add_description(update: Update, context: CallbackContext) -> int:
     update.message.reply_text(
         'Продолжим, по желанию напишите дополнение'
     )
+    if update.message.from_user.id not in user_information:
+        user_information[update.message.from_user.id] = {}
+    user_information[update.message.from_user.id]['addition'] = update.message.text
 
     return FULL_DESCRIPTION
 
@@ -82,7 +98,9 @@ def skip_description(update: Update, context: CallbackContext) -> int:
     update.message.reply_text(
         'Продолжим, по желанию напишите дополнение'
     )
-
+    if update.message.from_user.id not in user_information:
+        user_information[update.message.from_user.id] = {}
+    user_information[update.message.from_user.id]['addition'] = update.message.text
     return TITLE
 
 
@@ -117,4 +135,3 @@ new_ad_handler = ConversationHandler(
     },
     fallbacks=[CommandHandler('cancel', cancel)],
 )
-
