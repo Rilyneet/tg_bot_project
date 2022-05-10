@@ -4,8 +4,8 @@ from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Uniq
 from sqlalchemy import or_, create_engine, inspect
 from sqlalchemy.orm import sessionmaker, Session
 
-db_url = "sqlite:///bot_db.sqlite"
-engine = create_engine(db_url)
+db_url = "sqlite:////home/julia/gitflow/tg_bot_project/bot_db.sqlite"
+engine = create_engine(db_url)  
 
 # session=sessionmaker(bind=engine)
 session = Session(engine)
